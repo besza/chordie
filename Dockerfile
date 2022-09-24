@@ -1,8 +1,10 @@
 FROM registry.access.redhat.com/ubi8/openjdk-17:1.11 AS builder
+COPY . /home/jboss/chordie-app
+USER root
+RUN chown -R jboss /home/jboss/chordie-app
 USER jboss
 WORKDIR /home/jboss/chordie-app/
-COPY . ./
-RUN mvn clean package
+RUN mvn package
 
 FROM registry.access.redhat.com/ubi8/openjdk-17:1.11 AS runtime
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
