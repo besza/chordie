@@ -1,6 +1,7 @@
 FROM registry.access.redhat.com/ubi8/openjdk-17:1.11 AS builder
-WORKDIR $HOME/chordie-app/
-COPY --chown=185 . ./
+USER jboss
+WORKDIR /home/jboss/chordie-app/
+COPY . ./
 RUN mvn clean package
 
 FROM registry.access.redhat.com/ubi8/openjdk-17:1.11 AS runtime
@@ -15,7 +16,7 @@ RUN microdnf -y --nodocs install \
     wget \
     which
 
-USER 185
+USER jboss
 RUN wget -qO- "https://yihui.org/tinytex/install-bin-unix.sh" | sh
 ENV PATH="${PATH}:${HOME}/bin"
 RUN tlmgr install \
