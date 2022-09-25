@@ -84,7 +84,8 @@ public class ChordSchemeElement {
         }
 
         private void validate() {
-            // TODO: do some validation that make sense?
+            if (position != null && (position < 1 || position > 8))
+                throw new IllegalArgumentException("Chord diagram position must be between 1 and 8 inclusive but it is " + position);
         }
     }
 }

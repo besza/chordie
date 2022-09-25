@@ -1,5 +1,8 @@
 package com.besza;
 
+import org.jboss.resteasy.reactive.RestResponse;
+
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -7,8 +10,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
+@ApplicationScoped
 @Path("/chordie")
 public class ChordieResource {
 
@@ -16,14 +21,17 @@ public class ChordieResource {
     Chordie chordie;
 
     @GET
-    @Produces("application/pdf")
-    public Response chord(@NotBlank @QueryParam("name") String name,
-                          @Pattern(regexp = "[0-9Xx]{6}") @QueryParam("q") String shorthandNotation,
-                          @QueryParam("p") Integer position,
-                          @QueryParam("labels") String labels) {
-        return Response.ok()
-                .header("Content-Disposition", "inline")
-                .entity(chordie.transform(name, shorthandNotation, position, labels))
-                .build();
+    @Produces("image/svg+xml")
+    public CompletionStage<RestResponse<byte[]>> chord(
+            @NotBlank @QueryParam("name") String name,
+            @Pattern(regexp = "[0-9Xx]{6}") @QueryParam("q") String notation,
+            @QueryParam("labels") String labels
+    ) {
+        return CompletableFuture.supplyAsync(() -> chordie.transform(name, notation, labels))
+                .thenApply(bytes -> RestResponse.ResponseBuilder
+                        .ok(bytes)
+                        .header("X-Content-Type-Options", "nosniff")
+                        .build())
+                .whenCompleteAsync((response, ex) -> chordie.cleanUp());
     }
 }

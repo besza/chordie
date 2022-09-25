@@ -11,6 +11,7 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
 EXPOSE 8080 5005
 USER root
 RUN microdnf -y --nodocs install \
+    ghostscript \
     gpg \
     gzip \
     nano \
@@ -28,7 +29,9 @@ RUN tlmgr install \
         pgf \
         pgfopts \
         tikz-cd \
-        trimspaces
+        trimspaces \
+        dvisvgm \
+        && tlmgr path add
 
 COPY --from=builder --chown=185 /home/jboss/chordie-app/target/quarkus-app/lib/ /deployments/lib/
 COPY --from=builder --chown=185 /home/jboss/chordie-app/target/quarkus-app/*.jar /deployments/
